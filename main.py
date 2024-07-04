@@ -20,23 +20,23 @@ from google_drive_logic import *
 # https://stackoverflow.com/questions/62374432/displaying-images-when-hovering-over-point-in-plotly-scatter-plot-in-python
 
 
+import os
+import streamlit as st
+
 def trend_func(dropdown_1, dropdown_2):
-        current_directory = os.getcwd()
-        records_folder = os.path.join(current_directory, 'records')
-        # Check if the records_folder exists and is a directory
-        if os.path.exists(records_folder) and os.path.isdir(records_folder):
-            # st.write(f"The 'records' folder is located at: {records_folder}")
-            # List all directories within the records_folder
-            directories = [d for d in os.listdir(records_folder) if os.path.isdir(os.path.join(records_folder, d))]
-            if directories:
-                # st.write("The following subfolders and their '-cc' Excel files are found in the 'records' folder:")
-                for directory in directories:
-                    subfolder_path = os.path.join(records_folder, directory)
-                    # st.write(f"Subfolder: {directory}")
-                    # List all Excel files in the current subfolder that contain "-cc"
-                    excel_files = list_excel_files(dropdown_1, subfolder_path)
-                    if excel_files:
-                        for excel_file in excel_files:
+    current_directory = os.getcwd()
+    records_folder = os.path.join(current_directory, 'records')
+    processed_files = set()
+
+    if os.path.exists(records_folder) and os.path.isdir(records_folder):
+        directories = [d for d in os.listdir(records_folder) if os.path.isdir(os.path.join(records_folder, d))]
+        if directories:
+            for directory in directories:
+                subfolder_path = os.path.join(records_folder, directory)
+                excel_files = list_excel_files(dropdown_1, subfolder_path)
+                if excel_files:
+                    for excel_file in excel_files:
+                        if excel_file not in processed_files:
                             if dropdown_1 == "Cell Count":
                                 title = f"Cell Count {directory}"
                             elif dropdown_1 == "Circularity":
@@ -45,30 +45,34 @@ def trend_func(dropdown_1, dropdown_2):
                                 title = f"Perimeter {directory}"
                                 
                             color_dict = {
-                                        1: 'Group-1',  4: 'Group-1', 7: 'Group-1', 10: 'Group-1',
-                                        2: 'Group-2',  5: 'Group-2', 8: 'Group-2', 11: 'Group-2',
-                                        3: 'Group-3',  6: 'Group-3', 9: 'Group-3', 12: 'Group-3', 
-                                        }
-                            selected_file = excel_files[0]
-                            whiskerPlot(selected_file, dropdown_2, title, directory, color_dict, col=None)
-                    else:
-                        st.write("  No '-cc' Excel files found in this subfolder.")
-            else:
-                st.write("There are no subfolders in the 'records' folder.")
+                                1: 'Group-1',  4: 'Group-1', 7: 'Group-1', 10: 'Group-1',
+                                2: 'Group-2',  5: 'Group-2', 8: 'Group-2', 11: 'Group-2',
+                                3: 'Group-3',  6: 'Group-3', 9: 'Group-3', 12: 'Group-3', 
+                            }
+                            whiskerPlot(excel_file, dropdown_2, title, directory, color_dict, col=None)
+                            processed_files.add(excel_file)
+                else:
+                    st.write("  No '-cc' Excel files found in this subfolder.")
         else:
-            st.write("The 'records' folder does not exist in the current directory.")
+            st.write("There are no subfolders in the 'records' folder.")
+    else:
+        st.write("The 'records' folder does not exist in the current directory.")
+
 
 
 
 # Function to list all Excel files in a given directory
 def list_excel_files(dropdown_1, directory):
     if dropdown_1 == "Cell Count":
-        return [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f)) and f.endswith(('.xls', '.xlsx')) and "-cc" in f]
+        # return [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f)) and f.endswith(('.xls', '.xlsx')) and "-cc" in f]
+        return [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f)) and f.endswith(('.xls', '.xlsx')) and '-cc' in f.lower()]
     elif dropdown_1 == "Circularity":
-        return [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f)) and f.endswith(('.xls', '.xlsx')) and "-c" in f]
-    elif dropdown_1 == "Perimeter":
-        return [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f)) and f.endswith(('.xls', '.xlsx')) and "-p" in f]
+        # return [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f)) and f.endswith(('.xls', '.xlsx')) and "-c" in f]
+        return [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f)) and f.endswith(('.xls', '.xlsx')) and '-c' in f.lower() and '-cc' not in f.lower()]
 
+    elif dropdown_1 == "Perimeter":
+        # return [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f)) and f.endswith(('.xls', '.xlsx')) and "-p" in f]
+        return [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f)) and f.endswith(('.xls', '.xlsx')) and '-p' in f.lower() and '-pp' not in f.lower()]
 
 
 

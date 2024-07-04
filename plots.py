@@ -45,6 +45,11 @@ def heatMap(selected_file, dropdown_2, title, folder_name, col=None):
 
             labels = data['Label']
 
+            # Sort labels in descending order
+            data_selected = data_selected.loc[labels.sort_values(ascending=False).index]
+            labels = labels.sort_values(ascending=False)
+
+
             fig = go.Figure(data=go.Heatmap(
                             z=data_selected,
                             x=column_names,
